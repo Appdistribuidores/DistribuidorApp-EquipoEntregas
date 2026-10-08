@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <!-- CINTA DE PESTAÑAS Y HERRAMIENTAS -->
+            <!-- CINTA DE PESTAÑAS -->
             <nav class="flex space-x-1 px-4 pt-2 bg-gray-900 border-b border-gray-800 text-sm overflow-x-auto">
                 <button onclick="cambiarTab('entregadores')" id="tab-entregadores" class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-t-lg border-t-2 border-blue-500 flex items-center space-x-2 transition">
                     <span>👤 Entregadores</span>
@@ -74,16 +74,13 @@
                 <button onclick="cambiarTab('rutas')" id="tab-rutas" class="px-4 py-2 text-gray-400 hover:text-white rounded-t-lg flex items-center space-x-2 transition">
                     <span>📦 Rutas y Pedidos</span>
                 </button>
-                <button onclick="cambiarTab('configuracion')" id="tab-configuracion" class="px-4 py-2 text-gray-400 hover:text-white rounded-t-lg flex items-center space-x-2 transition">
-                    <span>⚙️ Configuración</span>
-                </button>
             </nav>
         </header>
 
         <!-- CONTENIDO PRINCIPAL -->
         <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
 
-            <!-- 1. SECCIÓN DE ENTREGADORES / CONDUCTORES -->
+            <!-- 1. SECCIÓN DE ENTREGADORES -->
             <section id="sec-entregadores" class="space-y-6">
                 <div class="flex justify-between items-center border-b border-gray-800 pb-3">
                     <div>
@@ -95,7 +92,6 @@
                     </button>
                 </div>
 
-                <!-- TABLA DE CONDUCTORES -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
                     <table class="w-full text-left text-sm text-gray-300">
                         <thead class="bg-gray-950 text-xs uppercase text-gray-400 border-b border-gray-800">
@@ -129,7 +125,6 @@
                     </button>
                 </div>
 
-                <!-- TABLA DE VEHÍCULOS -->
                 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
                     <table class="w-full text-left text-sm text-gray-300">
                         <thead class="bg-gray-950 text-xs uppercase text-gray-400 border-b border-gray-800">
@@ -151,7 +146,7 @@
                 </div>
             </section>
 
-            <!-- 3. SECCIÓN DE RUTAS Y PEDIDOS -->
+            <!-- 3. SECCIÓN DE RUTAS -->
             <section id="sec-rutas" class="hidden space-y-6">
                 <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center max-w-2xl mx-auto my-12 shadow-2xl">
                     <div class="text-4xl mb-4">📋</div>
@@ -159,38 +154,30 @@
                     <p class="text-sm text-gray-400 mb-6">Próximamente podrás cargar la foto general del lote de facturas asignado a cada motocarro.</p>
                 </div>
             </section>
-
-            <!-- 4. CONFIGURACIÓN -->
-            <section id="sec-configuracion" class="hidden space-y-6">
-                <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-xl">
-                    <h3 class="font-bold text-white mb-4">Estado de la Conexión Supabase</h3>
-                    <div class="space-y-3 text-xs">
-                        <div>
-                            <label class="block text-gray-400 mb-1">URL del Proyecto:</label>
-                            <input type="text" id="cfg-url" class="w-full bg-gray-950 text-gray-300 border border-gray-800 rounded p-2" readonly>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
         </main>
 
-        <!-- MODAL PARA CREAR CONDUCTOR -->
+        <!-- MODAL CONDUCTOR: NOMBRES Y APELLIDOS SEPARADOS -->
         <div id="modal-entregador" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
                 <h3 class="font-bold text-lg text-white mb-4">Registrar Nuevo Conductor</h3>
                 <div class="space-y-4 text-sm">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-400 mb-1">Nombre Completo *</label>
-                        <input type="text" id="ent-nombre" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Carlos Mario Restrepo">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Nombres *</label>
+                            <input type="text" id="ent-nombres" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Yesid Duvan">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1">Apellidos *</label>
+                            <input type="text" id="ent-apellidos" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Perez Garcia">
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-1">Cédula / Documento</label>
-                        <input type="text" id="ent-cedula" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 1017123456">
+                        <input type="text" id="ent-cedula" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 8015853">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-1">Teléfono de Contacto</label>
-                        <input type="text" id="ent-telefono" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 300 123 4567">
+                        <input type="text" id="ent-telefono" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 3122345835">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 mt-6">
@@ -200,7 +187,7 @@
             </div>
         </div>
 
-        <!-- MODAL PARA CREAR VEHÍCULO -->
+        <!-- MODAL VEHÍCULO -->
         <div id="modal-vehiculo" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
                 <h3 class="font-bold text-lg text-white mb-4">Registrar Nuevo Vehículo</h3>
@@ -227,14 +214,14 @@
 
     </div>
 
-    <!-- CÓDIGO Y LÓGICA DE SUPABASE Y AUTENTICACIÓN -->
+    <!-- CÓDIGO Y LÓGICA -->
     <script>
         const SUPABASE_URL = 'https://vthocrcgkblewyanmxyq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU0NDAsImV4cCI6MjA1NTk2MTQ0MH0.x-0_...'; 
+        // ASEGÚRATE DE COPIAR TU CLAVE ANON COMPLETA AQUÍ SINO SE CORTARÁ LA CONEXIÓN:
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0MjUyNTAsImV4cCI6MjEwNzAwMTI1MH0.KKReebandReParmKHRxyDJya5i3iSQBaDXlfKhlK_jc'; 
 
         let _supabase = null;
 
-        // Validar Login
         function validarLogin(e) {
             e.preventDefault();
             const u = document.getElementById('login-user').value;
@@ -260,15 +247,13 @@
         }
 
         function inicializarSupabase() {
-            document.getElementById('cfg-url').value = SUPABASE_URL;
             _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
             cargarEntregadores();
             cargarVehiculos();
         }
 
-        // Cambio de pestañas
         function cambiarTab(tab) {
-            ['entregadores', 'vehiculos', 'rutas', 'configuracion'].forEach(t => {
+            ['entregadores', 'vehiculos', 'rutas'].forEach(t => {
                 document.getElementById(`sec-${t}`).classList.add('hidden');
                 document.getElementById(`tab-${t}`).classList.remove('bg-gray-800', 'text-white', 'border-t-2', 'border-blue-500');
                 document.getElementById(`tab-${t}`).classList.add('text-gray-400');
@@ -279,7 +264,6 @@
             document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
         }
 
-        // Cargar Lista de Conductores
         async function cargarEntregadores() {
             if (!_supabase) return;
             const { data, error } = await _supabase.from('entregadores').select('*').order('created_at', { ascending: false });
@@ -306,7 +290,6 @@
             }
         }
 
-        // Cargar Lista de Vehículos
         async function cargarVehiculos() {
             if (!_supabase) return;
             const { data, error } = await _supabase.from('vehiculos').select('*').order('created_at', { ascending: false });
@@ -333,7 +316,6 @@
             }
         }
 
-        // Modales y Acciones
         function abrirModalEntregador() { document.getElementById('modal-entregador').classList.remove('hidden'); }
         function abrirModalVehiculo() { document.getElementById('modal-vehiculo').classList.remove('hidden'); }
         function cerrarModales() {
@@ -342,17 +324,31 @@
         }
 
         async function guardarEntregador() {
-            const nombre = document.getElementById('ent-nombre').value;
-            const cedula = document.getElementById('ent-cedula').value;
-            const telefono = document.getElementById('ent-telefono').value;
+            const nombres = document.getElementById('ent-nombres').value.trim();
+            const apellidos = document.getElementById('ent-apellidos').value.trim();
+            const cedula = document.getElementById('ent-cedula').value.trim();
+            const telefono = document.getElementById('ent-telefono').value.trim();
 
-            if (!nombre) return alert('El nombre es obligatorio');
+            if (!nombres || !apellidos) return alert('Debes ingresar nombres y apellidos');
 
-            const { error } = await _supabase.from('entregadores').insert([{ nombre_completo: nombre, cedula: cedula, telefono: telefono }]);
+            const nombreCompleto = `${nombres} ${apellidos}`;
+
+            const { error } = await _supabase.from('entregadores').insert([{ 
+                nombre_completo: nombreCompleto, 
+                cedula: cedula, 
+                telefono: telefono 
+            }]);
+
             if (!error) {
+                document.getElementById('ent-nombres').value = '';
+                document.getElementById('ent-apellidos').value = '';
+                document.getElementById('ent-cedula').value = '';
+                document.getElementById('ent-telefono').value = '';
                 cerrarModales();
                 cargarEntregadores();
-            } else { alert('Error al guardar conductor.'); }
+            } else { 
+                alert('Error al guardar conductor: ' + error.message); 
+            }
         }
 
         async function guardarVehiculo() {
@@ -366,7 +362,7 @@
             if (!error) {
                 cerrarModales();
                 cargarVehiculos();
-            } else { alert('Error al guardar vehículo.'); }
+            } else { alert('Error al guardar vehículo: ' + error.message); }
         }
 
         async function eliminarEntregador(id) {
@@ -383,13 +379,11 @@
             }
         }
 
-        // Reloj
         setInterval(() => {
             const el = document.getElementById('reloj-sistema');
             if (el) el.innerText = new Date().toLocaleTimeString('es-CO');
         }, 1000);
 
-        // Verificar sesión al cargar
         window.onload = () => {
             if (sessionStorage.getItem('jf_admin_auth') === 'true') {
                 mostrarPanel();
