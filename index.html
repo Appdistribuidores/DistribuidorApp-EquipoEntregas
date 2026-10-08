@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Entregadores - Distribuidora JF</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800 font-sans">
+
+    <!-- Encabezado -->
+    <header class="bg-blue-700 text-white p-4 shadow-md flex justify-between items-center">
+        <div>
+            <h1 class="font-bold text-lg">Distribuidora JF</h1>
+            <p class="text-xs text-blue-200">Módulo de Entregas</p>
+        </div>
+        <span id="gps-status" class="text-xs bg-red-500 text-white px-2 py-1 rounded-full">GPS Inactivo</span>
+    </header>
+
+    <main class="p-4 max-w-md mx-auto">
+        <!-- Selector de Conductor -->
+        <div id="section-login" class="bg-white p-4 rounded-lg shadow mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Selecciona tu Nombre:</label>
+            <select id="select-entregador" class="w-full border-gray-300 rounded-lg p-2 border mb-3">
+                <option value="">Cargando conductores...</option>
+            </select>
+            <button onclick="cargarRuta()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition">
+                Ver Mi Ruta Del Día
+            </button>
+        </div>
+
+        <!-- Lista de Pedidos -->
+        <div id="section-pedidos" class="hidden">
+            <h2 class="font-bold text-gray-700 mb-3 flex justify-between items-center">
+                <span>Mis Pedidos</span>
+                <span id="total-pedidos" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded">0</span>
+            </h2>
+            <div id="lista-pedidos" class="space-y-3">
+                <!-- Se puebla dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Modal de Confirmación de Entrega -->
+        <div id="modal-entrega" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-lg p-5 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                <h3 class="font-bold text-lg mb-2 text-gray-800" id="modal-cliente">Reportar Entrega</h3>
+                <p class="text-sm text-gray-500 mb-4" id="modal-factura"></p>
+
+                <!-- Restricción de Cámara -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Foto Obligatoria (En vivo):</label>
+                    <input type="file" id="foto-input" accept="image/*" capture="environment" class="w-full text-sm border p-2 rounded">
+                    <p class="text-[10px] text-gray-400 mt-1">* Bloqueado el uso de imágenes de la galería.</p>
+                </div>
+
+                <!-- Estado de la visita -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Resultado de la visita:</label>
+                    <select id="estado-select" class="w-full border text-sm rounded p-2">
+                        <option value="entregado">Entrega Completa</option>
+                        <option value="entregado_parcial">Entrega Parcial (Novedad)</option>
+                        <option value="rechazado">Entrega Rechazada</option>
+                        <option value="cliente_cerrado">Cliente Cerrado</option>
+                        <option value="sin_dinero">Cliente Sin Dinero</option>
+                        <option value="no_realizado">Pedido No Realizado por Cliente</option>
+                        <option value="otro">Otro Motivo</option>
+                    </select>
+                </div>
+
+                <!-- Comentarios / Novedades -->
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Notas / Observaciones:</label>
+                    <textarea id="comentarios-input" rows="2" class="w-full border rounded p-2 text-sm" placeholder="Detalle cualquier observación..."></textarea>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="flex space-x-2">
+                    <button onclick="cerrarModal()" class="w-1/2 bg-gray-300 text-gray-700 py-2 rounded-lg font-semibold text-sm">Cancelar</button>
+                    <button onclick="guardarEvidencia()" class="w-1/2 bg-green-600 text-white py-2 rounded-lg font-semibold text-sm">Guardar y Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Configuración y Lógica Supabase -->
+    <script>
+        // CONFIGURA TUS CREDENCIALES DE SUPABASE AQUÍ
+        const SUPABASE_URL = 'sb_publishable_Q87CdB6tOjUb6E_u7QGARQ_MemwbtzQ';
+        const SUPABASE_KEY = 'sb_secret_bIK13ikynWFSh4zTv5ZxkQ_4FVrB1P8';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let posActual = null;
+        let pedidoSeleccionado = null;
+
+        // Inicializar GPS
+        if ("geolocation" in navigator) {
+            navigator.geolocation.watchPosition(
+                (pos) => {
+                    posActual = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    document.getElementById('gps-status').innerText = 'GPS Activo';
+                    document.getElementById('gps-status').className = 'text-xs bg-green-500 text-white px-2 py-1 rounded-full';
+                },
+                (err) => {
+                    document.getElementById('gps-status').innerText = 'GPS Error';
+                    document.getElementById('gps-status').className = 'text-xs bg-red-500 text-white px-2 py-1 rounded-full';
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        // Cargar Lista de Conductores al Iniciar
+        async function cargarEntregadores() {
+            const { data, error } = await _supabase.from('entregadores').select('*');
+            if (data) {
+                const select = document.getElementById('select-entregador');
+                select.innerHTML = '<option value="">-- Selecciona tu nombre --</option>';
+                data.forEach(e => {
+                    select.innerHTML += `<option value="${e.id}">${e.nombre_completo}</option>`;
+                });
+            }
+        }
+
+        async function cargarRuta() {
+            const entregadorId = document.getElementById('select-entregador').value;
+            if (!entregadorId) return alert('Por favor selecciona un conductor');
+
+            const { data: pedidos, error } = await _supabase
+                .from('pedidos')
+                .select('*')
+                .or(`entregador_id.eq.${entregadorId},entregador_id.is.null`);
+
+            const contenedor = document.getElementById('lista-pedidos');
+            contenedor.innerHTML = '';
+            document.getElementById('section-pedidos').classList.remove('hidden');
+
+            if (pedidos && pedidos.length > 0) {
+                document.getElementById('total-pedidos').innerText = pedidos.length;
+                pedidos.forEach(p => {
+                    contenedor.innerHTML += `
+                        <div class="bg-white p-4 rounded-lg shadow border-l-4 ${p.estado === 'entregado' ? 'border-green-500' : 'border-blue-500'}">
+                            <div class="flex justify-between items-start mb-1">
+                                <h4 class="font-bold text-gray-800">${p.nombre_cliente}</h4>
+                                <span class="text-xs bg-blue-100 text-blue-800 font-semibold px-2 py-0.5 rounded">${p.numero_factura}</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mb-2">📍 ${p.direccion_entrega}</p>
+                            <p class="text-xs font-semibold text-gray-700 mb-3">Valor: $${Number(p.valor_total).toLocaleString('es-CO')} | Cajas: ${p.total_cajas}</p>
+                            
+                            <button onclick='abrirModal(${JSON.stringify(p)})' class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded transition">
+                                Reportar Entrega / Visita
+                            </button>
+                        </div>
+                    `;
+                });
+            } else {
+                contenedor.innerHTML = '<p class="text-center text-sm text-gray-500 py-4">No hay pedidos asignados para hoy.</p>';
+            }
+        }
+
+        function abrirModal(pedido) {
+            pedidoSeleccionado = pedido;
+            document.getElementById('modal-cliente').innerText = pedido.nombre_cliente;
+            document.getElementById('modal-factura').innerText = `Factura: ${pedido.numero_factura}`;
+            document.getElementById('modal-entrega').classList.remove('hidden');
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-entrega').classList.add('hidden');
+            pedidoSeleccionado = null;
+        }
+
+        async function guardarEvidencia() {
+            if (!posActual) {
+                return alert('⚠️ Error: Se requiere la ubicación GPS activa para poder guardar el reporte.');
+            }
+
+            const fotoInput = document.getElementById('foto-input');
+            if (fotoInput.files.length === 0) {
+                return alert('📸 Debes tomar una fotografía en vivo para confirmar.');
+            }
+
+            const estado = document.getElementById('estado-select').value;
+            const comentarios = document.getElementById('comentarios-input').value;
+
+            // Actualizar estado del pedido en Supabase
+            const { error: errorPedido } = await _supabase
+                .from('pedidos')
+                .update({ estado: estado, novedad_detalle: comentarios })
+                .eq('id', pedidoSeleccionado.id);
+
+            if (!errorPedido) {
+                alert('✅ Entrega reportada con éxito.');
+                cerrarModal();
+                cargarRuta();
+            } else {
+                alert('Ocurrió un error al guardar el reporte.');
+            }
+        }
+
+        window.onload = cargarEntregadores;
+    </script>
+</body>
+</html>
