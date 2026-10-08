@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrativo - Distribuidora JF</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-black text-gray-100 font-sans min-h-screen flex flex-col">
+
+    <!-- BARRA SUPERIOR ESTILO ERP / CONTAPYME -->
+    <header class="bg-gray-900 border-b border-gray-800 select-none">
+        <div class="px-4 py-2 flex justify-between items-center bg-gray-950 border-b border-gray-800 text-xs text-gray-400">
+            <div class="flex items-center space-x-2">
+                <span class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                <span class="font-bold text-gray-200">DISTRIBUIDORA JF S.A.S.</span>
+                <span>| Módulo de Gestión & Logística v1.0</span>
+            </div>
+            <div class="flex space-x-4">
+                <span>Estado: <b class="text-green-400">Conectado a Supabase</b></span>
+                <span id="reloj-sistema">--:--:--</span>
+            </div>
+        </div>
+
+        <!-- CINTA DE PESTAÑAS Y HERRAMIENTAS -->
+        <nav class="flex space-x-1 px-4 pt-2 bg-gray-900 border-b border-gray-800 text-sm overflow-x-auto">
+            <button onclick="cambiarTab('entregadores')" id="tab-entregadores" class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-t-lg border-t-2 border-blue-500 flex items-center space-x-2 transition">
+                <span>👤 Entregadores</span>
+            </button>
+            <button onclick="cambiarTab('vehiculos')" id="tab-vehiculos" class="px-4 py-2 text-gray-400 hover:text-white rounded-t-lg flex items-center space-x-2 transition">
+                <span>🚚 Vehículos / Motocarros</span>
+            </button>
+            <button onclick="cambiarTab('rutas')" id="tab-rutas" class="px-4 py-2 text-gray-400 hover:text-white rounded-t-lg flex items-center space-x-2 transition">
+                <span>📦 Rutas y Pedidos</span>
+            </button>
+            <button onclick="cambiarTab('configuracion')" id="tab-configuracion" class="px-4 py-2 text-gray-400 hover:text-white rounded-t-lg flex items-center space-x-2 transition">
+                <span>⚙️ Configuración</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
+
+        <!-- 1. SECCIÓN DE ENTREGADORES / CONDUCTORES -->
+        <section id="sec-entregadores" class="space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <div>
+                    <h2 class="text-xl font-bold text-white">Gestión de Entregadores</h2>
+                    <p class="text-xs text-gray-400">Registra y administra el personal encargado de la distribución.</p>
+                </div>
+                <button onclick="abrirModalEntregador()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition shadow-lg">
+                    <span>+ Nuevo Conductor</span>
+                </button>
+            </div>
+
+            <!-- TABLA DE CONDUCTORES -->
+            <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-950 text-xs uppercase text-gray-400 border-b border-gray-800">
+                        <tr>
+                            <th class="p-4">ID</th>
+                            <th class="p-4">Nombre Completo</th>
+                            <th class="p-4">Teléfono</th>
+                            <th class="p-4">Cédula</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-entregadores-body" class="divide-y divide-gray-800">
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-gray-500">Cargando conductores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 2. SECCIÓN DE VEHÍCULOS -->
+        <section id="sec-vehiculos" class="hidden space-y-6">
+            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+                <div>
+                    <h2 class="text-xl font-bold text-white">Flota de Vehículos</h2>
+                    <p class="text-xs text-gray-400">Administra los motocarros, camiones y vehículos de reparto.</p>
+                </div>
+                <button onclick="abrirModalVehiculo()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition shadow-lg">
+                    <span>+ Nuevo Vehículo</span>
+                </button>
+            </div>
+
+            <!-- TABLA DE VEHÍCULOS -->
+            <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-xl">
+                <table class="w-full text-left text-sm text-gray-300">
+                    <thead class="bg-gray-950 text-xs uppercase text-gray-400 border-b border-gray-800">
+                        <tr>
+                            <th class="p-4">Placa</th>
+                            <th class="p-4">Marca / Modelo</th>
+                            <th class="p-4">Tipo</th>
+                            <th class="p-4">Capacidad (Cajas)</th>
+                            <th class="p-4">Estado</th>
+                            <th class="p-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-vehiculos-body" class="divide-y divide-gray-800">
+                        <tr>
+                            <td colspan="6" class="p-6 text-center text-gray-500">Cargando vehículos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 3. SECCIÓN DE RUTAS Y PEDIDOS (EN DESARROLLO) -->
+        <section id="sec-rutas" class="hidden space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-8 text-center max-w-2xl mx-auto my-12 shadow-2xl">
+                <div class="text-4xl mb-4">📋</div>
+                <h3 class="text-lg font-bold text-white mb-2">Asignación Masiva por Foto de Facturas</h3>
+                <p class="text-sm text-gray-400 mb-6">Próximamente podrás cargar la foto general del lote de facturas asignado a cada motocarro.</p>
+            </div>
+        </section>
+
+        <!-- 4. CONFIGURACIÓN -->
+        <section id="sec-configuracion" class="hidden space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 max-w-xl">
+                <h3 class="font-bold text-white mb-4">Estado de la Conexión Supabase</h3>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block text-gray-400 mb-1">URL del Proyecto:</label>
+                        <input type="text" id="cfg-url" class="w-full bg-gray-950 text-gray-300 border border-gray-800 rounded p-2" readonly>
+                    </div>
+                    <div>
+                        <label class="block text-gray-400 mb-1">Clave de la API (Anon Key):</label>
+                        <input type="password" id="cfg-key" class="w-full bg-gray-950 text-gray-300 border border-gray-800 rounded p-2" placeholder="••••••••••••••••">
+                    </div>
+                    <button onclick="guardarConfiguracion()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded text-xs">Guardar Cambios</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL PARA CREAR CONDUCTOR -->
+    <div id="modal-entregador" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="font-bold text-lg text-white mb-4">Registrar Nuevo Conductor</h3>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Nombre Completo *</label>
+                    <input type="text" id="ent-nombre" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Carlos Mario Restrepo">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Cédula / Documento</label>
+                    <input type="text" id="ent-cedula" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 1017123456">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Teléfono de Contacto</label>
+                    <input type="text" id="ent-telefono" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 300 123 4567">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="cerrarModales()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-700">Cancelar</button>
+                <button onclick="guardarEntregador()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700">Guardar Conductor</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA CREAR VEHÍCULO -->
+    <div id="modal-vehiculo" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h3 class="font-bold text-lg text-white mb-4">Registrar Nuevo Vehículo</h3>
+            <div class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Placa *</label>
+                    <input type="text" id="veh-placa" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 uppercase focus:border-blue-500 outline-none" placeholder="Ej: ABC-123">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Marca / Modelo</label>
+                    <input type="text" id="veh-modelo" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Piaggio Ape 500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-400 mb-1">Capacidad Máxima (Cajas)</label>
+                    <input type="number" id="veh-capacidad" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 50">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button onclick="cerrarModales()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-700">Cancelar</button>
+                <button onclick="guardarVehiculo()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700">Guardar Vehículo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CÓDIGO Y LÓGICA DE SUPABASE -->
+    <script>
+        const SUPABASE_URL = 'https://vthocrcgkblewyanmxyq.supabase.co';
+        let SUPABASE_KEY = localStorage.getItem('jf_admin_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU0NDAsImV4cCI6MjA1NTk2MTQ0MH0.x-0_...'; 
+
+        let _supabase = null;
+
+        function inicializarSupabase() {
+            document.getElementById('cfg-url').value = SUPABASE_URL;
+            if (SUPABASE_KEY) {
+                _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                cargarEntregadores();
+                cargarVehiculos();
+            }
+        }
+
+        // Cambio de pestañas
+        function cambiarTab(tab) {
+            ['entregadores', 'vehiculos', 'rutas', 'configuracion'].forEach(t => {
+                document.getElementById(`sec-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('bg-gray-800', 'text-white', 'border-t-2', 'border-blue-500');
+                document.getElementById(`tab-${t}`).classList.add('text-gray-400');
+            });
+
+            document.getElementById(`sec-${tab}`).classList.remove('hidden');
+            document.getElementById(`tab-${tab}`).classList.add('bg-gray-800', 'text-white', 'border-t-2', 'border-blue-500');
+            document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
+        }
+
+        // Cargar Lista de Conductores
+        async function cargarEntregadores() {
+            if (!_supabase) return;
+            const { data, error } = await _supabase.from('entregadores').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('tabla-entregadores-body');
+            tbody.innerHTML = '';
+
+            if (data && data.length > 0) {
+                data.forEach(e => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-950/50 transition">
+                            <td class="p-4 font-mono text-xs text-gray-500">${e.id.substring(0,8)}...</td>
+                            <td class="p-4 font-bold text-white">${e.nombre_completo}</td>
+                            <td class="p-4">${e.telefono || 'N/A'}</td>
+                            <td class="p-4">${e.cedula || 'N/A'}</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-green-500/10 text-green-400 rounded-full text-xs border border-green-500/20">Activo</span></td>
+                            <td class="p-4 text-right">
+                                <button onclick="eliminarEntregador('${e.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500">No hay conductores registrados.</td></tr>';
+            }
+        }
+
+        // Cargar Lista de Vehículos
+        async function cargarVehiculos() {
+            if (!_supabase) return;
+            const { data, error } = await _supabase.from('vehiculos').select('*').order('created_at', { ascending: false });
+            const tbody = document.getElementById('tabla-vehiculos-body');
+            tbody.innerHTML = '';
+
+            if (data && data.length > 0) {
+                data.forEach(v => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-gray-950/50 transition">
+                            <td class="p-4 font-bold text-blue-400 font-mono">${v.placa}</td>
+                            <td class="p-4">${v.marca_modelo || 'N/A'}</td>
+                            <td class="p-4">${v.tipo || 'Motocarro'}</td>
+                            <td class="p-4 font-bold">${v.capacidad_cajas || 0} Cajas</td>
+                            <td class="p-4"><span class="px-2 py-1 bg-green-500/10 text-green-400 rounded-full text-xs border border-green-500/20">Operativo</span></td>
+                            <td class="p-4 text-right">
+                                <button onclick="eliminarVehiculo('${v.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">Eliminar</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500">No hay vehículos registrados.</td></tr>';
+            }
+        }
+
+        // Modales y Acciones
+        function abrirModalEntregador() { document.getElementById('modal-entregador').classList.remove('hidden'); }
+        function abrirModalVehiculo() { document.getElementById('modal-vehiculo').classList.remove('hidden'); }
+        function cerrarModales() {
+            document.getElementById('modal-entregador').classList.add('hidden');
+            document.getElementById('modal-vehiculo').classList.add('hidden');
+        }
+
+        async function guardarEntregador() {
+            const nombre = document.getElementById('ent-nombre').value;
+            const cedula = document.getElementById('ent-cedula').value;
+            const telefono = document.getElementById('ent-telefono').value;
+
+            if (!nombre) return alert('El nombre es obligatorio');
+
+            const { error } = await _supabase.from('entregadores').insert([{ nombre_completo: nombre, cedula: cedula, telefono: telefono }]);
+            if (!error) {
+                cerrarModales();
+                cargarEntregadores();
+            } else { alert('Error al guardar conductor.'); }
+        }
+
+        async function guardarVehiculo() {
+            const placa = document.getElementById('veh-placa').value;
+            const modelo = document.getElementById('veh-modelo').value;
+            const capacidad = document.getElementById('veh-capacidad').value;
+
+            if (!placa) return alert('La placa es obligatoria');
+
+            const { error } = await _supabase.from('vehiculos').insert([{ placa: placa.toUpperCase(), marca_modelo: modelo, capacidad_cajas: parseInt(capacidad) || 0 }]);
+            if (!error) {
+                cerrarModales();
+                cargarVehiculos();
+            } else { alert('Error al guardar vehículo.'); }
+        }
+
+        async function eliminarEntregador(id) {
+            if (confirm('¿Seguro de eliminar este conductor?')) {
+                await _supabase.from('entregadores').delete().eq('id', id);
+                cargarEntregadores();
+            }
+        }
+
+        async function eliminarVehiculo(id) {
+            if (confirm('¿Seguro de eliminar este vehículo?')) {
+                await _supabase.from('vehiculos').delete().eq('id', id);
+                cargarVehiculos();
+            }
+        }
+
+        // Reloj
+        setInterval(() => {
+            document.getElementById('reloj-sistema').innerText = new Date().toLocaleTimeString('es-CO');
+        }, 1000);
+
+        window.onload = inicializarSupabase;
+    </script>
+</body>
+</html>
