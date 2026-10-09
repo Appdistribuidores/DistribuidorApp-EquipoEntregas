@@ -65,8 +65,8 @@
 
             <!-- CINTA DE PESTAÑAS -->
             <nav class="flex space-x-1 px-4 pt-2 bg-gray-900 border-b border-gray-800 text-sm overflow-x-auto">
-                <button onclick="cambiarTab('entregadores')" id="tab-entregadores" class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-t-lg border-t-2 border-blue-500 flex items-center space-x-2 transition">
-                    <span>👤 Entregadores</span>
+                <button onclick="cambiarTab('conductores')" id="tab-conductores" class="px-4 py-2 bg-gray-800 text-white font-semibold rounded-t-lg border-t-2 border-blue-500 flex items-center space-x-2 transition">
+                    <span>👤 Conductores</span>
                 </button>
                 <button onclick="cambiarTab('vehiculos')" id="tab-vehiculos" class="px-4 py-2 text-gray-400 hover:text-white rounded-t-lg flex items-center space-x-2 transition">
                     <span>🚚 Vehículos / Motocarros</span>
@@ -80,14 +80,14 @@
         <!-- CONTENIDO PRINCIPAL -->
         <main class="flex-1 p-6 max-w-7xl w-full mx-auto">
 
-            <!-- 1. SECCIÓN DE ENTREGADORES -->
-            <section id="sec-entregadores" class="space-y-6">
+            <!-- 1. SECCIÓN DE CONDUCTORES -->
+            <section id="sec-conductores" class="space-y-6">
                 <div class="flex justify-between items-center border-b border-gray-800 pb-3">
                     <div>
-                        <h2 class="text-xl font-bold text-white">Gestión de Entregadores</h2>
+                        <h2 class="text-xl font-bold text-white">Gestión de Conductores</h2>
                         <p class="text-xs text-gray-400">Registra y administra el personal encargado de la distribución.</p>
                     </div>
-                    <button onclick="abrirModalEntregador()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition shadow-lg">
+                    <button onclick="abrirModalConductor()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 transition shadow-lg">
                         <span>+ Nuevo Conductor</span>
                     </button>
                 </div>
@@ -96,17 +96,16 @@
                     <table class="w-full text-left text-sm text-gray-300">
                         <thead class="bg-gray-950 text-xs uppercase text-gray-400 border-b border-gray-800">
                             <tr>
-                                <th class="p-4">ID</th>
+                                <th class="p-4">Cédula</th>
                                 <th class="p-4">Nombre Completo</th>
                                 <th class="p-4">Teléfono</th>
-                                <th class="p-4">Cédula</th>
                                 <th class="p-4">Estado</th>
                                 <th class="p-4 text-right">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="tabla-entregadores-body" class="divide-y divide-gray-800">
+                        <tbody id="tabla-conductores-body" class="divide-y divide-gray-800">
                             <tr>
-                                <td colspan="6" class="p-6 text-center text-gray-500">Cargando conductores...</td>
+                                <td colspan="5" class="p-6 text-center text-gray-500">Cargando conductores...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -156,33 +155,33 @@
             </section>
         </main>
 
-        <!-- MODAL CONDUCTOR: NOMBRES Y APELLIDOS SEPARADOS -->
-        <div id="modal-entregador" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+        <!-- MODAL CONDUCTOR -->
+        <div id="modal-conductor" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
             <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md shadow-2xl">
                 <h3 class="font-bold text-lg text-white mb-4">Registrar Nuevo Conductor</h3>
                 <div class="space-y-4 text-sm">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Cédula / Documento *</label>
+                        <input type="text" id="cond-cedula" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 8015853">
+                    </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-1">Nombres *</label>
-                            <input type="text" id="ent-nombres" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Yesid Duvan">
+                            <input type="text" id="cond-nombres" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Frank Fernando">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-400 mb-1">Apellidos *</label>
-                            <input type="text" id="ent-apellidos" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Perez Garcia">
+                            <input type="text" id="cond-apellidos" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: Colorado Restrepo">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-gray-400 mb-1">Cédula / Documento</label>
-                        <input type="text" id="ent-cedula" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 8015853">
-                    </div>
-                    <div>
                         <label class="block text-xs font-medium text-gray-400 mb-1">Teléfono de Contacto</label>
-                        <input type="text" id="ent-telefono" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 3122345835">
+                        <input type="text" id="cond-telefono" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 3122345835">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 mt-6">
                     <button onclick="cerrarModales()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-700">Cancelar</button>
-                    <button onclick="guardarEntregador()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700">Guardar Conductor</button>
+                    <button onclick="guardarConductor()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-semibold hover:bg-blue-700">Guardar Conductor</button>
                 </div>
             </div>
         </div>
@@ -217,8 +216,7 @@
     <!-- CÓDIGO Y LÓGICA -->
     <script>
         const SUPABASE_URL = 'https://vthocrcgkblewyanmxyq.supabase.co';
-        // ASEGÚRATE DE COPIAR TU CLAVE ANON COMPLETA AQUÍ SINO SE CORTARÁ LA CONEXIÓN:
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0MjUyNTAsImV4cCI6MjEwNzAwMTI1MH0.KKReebandReParmKHRxyDJya5i3iSQBaDXlfKhlK_jc'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU0NDAsImV4cCI6MjA1NTk2MTQ0MH0.x-0_C3sFfX4jGZp614m1r92P_4gH0zP3kR8Z_L4m0_0'; 
 
         let _supabase = null;
 
@@ -248,12 +246,12 @@
 
         function inicializarSupabase() {
             _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-            cargarEntregadores();
+            cargarConductores();
             cargarVehiculos();
         }
 
         function cambiarTab(tab) {
-            ['entregadores', 'vehiculos', 'rutas'].forEach(t => {
+            ['conductores', 'vehiculos', 'rutas'].forEach(t => {
                 document.getElementById(`sec-${t}`).classList.add('hidden');
                 document.getElementById(`tab-${t}`).classList.remove('bg-gray-800', 'text-white', 'border-t-2', 'border-blue-500');
                 document.getElementById(`tab-${t}`).classList.add('text-gray-400');
@@ -264,35 +262,34 @@
             document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
         }
 
-        async function cargarEntregadores() {
+        async function cargarConductores() {
             if (!_supabase) return;
-            const { data, error } = await _supabase.from('entregadores').select('*').order('created_at', { ascending: false });
-            const tbody = document.getElementById('tabla-entregadores-body');
+            const { data, error } = await _supabase.from('conductores').select('*');
+            const tbody = document.getElementById('tabla-conductores-body');
             tbody.innerHTML = '';
 
             if (data && data.length > 0) {
-                data.forEach(e => {
+                data.forEach(c => {
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-950/50 transition">
-                            <td class="p-4 font-mono text-xs text-gray-500">${e.id.substring(0,8)}...</td>
-                            <td class="p-4 font-bold text-white">${e.nombre_completo}</td>
-                            <td class="p-4">${e.telefono || 'N/A'}</td>
-                            <td class="p-4">${e.cedula || 'N/A'}</td>
+                            <td class="p-4 font-mono font-bold text-blue-400">${c.cedula || 'S/N'}</td>
+                            <td class="p-4 font-bold text-white">${c.nombre_completo}</td>
+                            <td class="p-4">${c.telefono || 'N/A'}</td>
                             <td class="p-4"><span class="px-2 py-1 bg-green-500/10 text-green-400 rounded-full text-xs border border-green-500/20">Activo</span></td>
                             <td class="p-4 text-right">
-                                <button onclick="eliminarEntregador('${e.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">Eliminar</button>
+                                <button onclick="eliminarConductor('${c.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">Eliminar</button>
                             </td>
                         </tr>
                     `;
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-500">No hay conductores registrados.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">No hay conductores registrados.</td></tr>';
             }
         }
 
         async function cargarVehiculos() {
             if (!_supabase) return;
-            const { data, error } = await _supabase.from('vehiculos').select('*').order('created_at', { ascending: false });
+            const { data, error } = await _supabase.from('vehiculos').select('*');
             const tbody = document.getElementById('tabla-vehiculos-body');
             tbody.innerHTML = '';
 
@@ -316,45 +313,45 @@
             }
         }
 
-        function abrirModalEntregador() { document.getElementById('modal-entregador').classList.remove('hidden'); }
+        function abrirModalConductor() { document.getElementById('modal-conductor').classList.remove('hidden'); }
         function abrirModalVehiculo() { document.getElementById('modal-vehiculo').classList.remove('hidden'); }
         function cerrarModales() {
-            document.getElementById('modal-entregador').classList.add('hidden');
+            document.getElementById('modal-conductor').classList.add('hidden');
             document.getElementById('modal-vehiculo').classList.add('hidden');
         }
 
-        async function guardarEntregador() {
-            const nombres = document.getElementById('ent-nombres').value.trim();
-            const apellidos = document.getElementById('ent-apellidos').value.trim();
-            const cedula = document.getElementById('ent-cedula').value.trim();
-            const telefono = document.getElementById('ent-telefono').value.trim();
+        async function guardarConductor() {
+            const cedula = document.getElementById('cond-cedula').value.trim();
+            const nombres = document.getElementById('cond-nombres').value.trim();
+            const apellidos = document.getElementById('cond-apellidos').value.trim();
+            const telefono = document.getElementById('cond-telefono').value.trim();
 
-            if (!nombres || !apellidos) return alert('Debes ingresar nombres y apellidos');
+            if (!nombres || !apellidos) return alert('Debes ingresar nombres y apellidos.');
 
             const nombreCompleto = `${nombres} ${apellidos}`;
 
-            const { error } = await _supabase.from('entregadores').insert([{ 
+            const { error } = await _supabase.from('conductores').insert([{ 
+                cedula: cedula,
                 nombre_completo: nombreCompleto, 
-                cedula: cedula, 
                 telefono: telefono 
             }]);
 
             if (!error) {
-                document.getElementById('ent-nombres').value = '';
-                document.getElementById('ent-apellidos').value = '';
-                document.getElementById('ent-cedula').value = '';
-                document.getElementById('ent-telefono').value = '';
+                document.getElementById('cond-cedula').value = '';
+                document.getElementById('cond-nombres').value = '';
+                document.getElementById('cond-apellidos').value = '';
+                document.getElementById('cond-telefono').value = '';
                 cerrarModales();
-                cargarEntregadores();
+                cargarConductores();
             } else { 
                 alert('Error al guardar conductor: ' + error.message); 
             }
         }
 
         async function guardarVehiculo() {
-            const placa = document.getElementById('veh-placa').value;
-            const modelo = document.getElementById('veh-modelo').value;
-            const capacidad = document.getElementById('veh-capacidad').value;
+            const placa = document.getElementById('veh-placa').value.trim();
+            const modelo = document.getElementById('veh-modelo').value.trim();
+            const capacidad = document.getElementById('veh-capacidad').value.trim();
 
             if (!placa) return alert('La placa es obligatoria');
 
@@ -365,10 +362,10 @@
             } else { alert('Error al guardar vehículo: ' + error.message); }
         }
 
-        async function eliminarEntregador(id) {
+        async function eliminarConductor(id) {
             if (confirm('¿Seguro de eliminar este conductor?')) {
-                await _supabase.from('entregadores').delete().eq('id', id);
-                cargarEntregadores();
+                await _supabase.from('conductores').delete().eq('id', id);
+                cargarConductores();
             }
         }
 
