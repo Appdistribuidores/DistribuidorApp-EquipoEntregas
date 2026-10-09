@@ -181,7 +181,7 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-1">Estado del Conductor</label>
                         <select id="cond-estado" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none">
-                            <!-- Se carga desde la tabla estados_conductor -->
+                            <!-- Se puebla dinámicamente -->
                         </select>
                     </div>
                 </div>
@@ -225,7 +225,12 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU0NDAsImV4cCI6MjA1NTk2MTQ0MH0.x-0_C3sFfX4jGZp614m1r92P_4gH0zP3kR8Z_L4m0_0'; 
 
         let _supabase = null;
-        let opcionesEstados = ['Activo', 'Falta injustificada', 'Descanso', 'Incapacitado'];
+        let opcionesEstados = [
+            { nombre: 'Activo', color: '#22c55e' },
+            { nombre: 'Falta injustificada', color: '#ef4444' },
+            { nombre: 'Descanso', color: '#3b82f6' },
+            { nombre: 'Incapacitado', color: '#eab308' }
+        ];
 
         function validarLogin(e) {
             e.preventDefault();
@@ -258,12 +263,12 @@
             cargarVehiculos();
         }
 
-        // Lee dinámicamente los estados guardados en la tabla 'estados_conductor'
+        // Carga dinámicamente nombre y color desde 'estados_conductor'
         async function cargarEstadosDesdeTabla() {
             if (!_supabase) return;
-            const { data, error } = await _supabase.from('estados_conductor').select('nombre').order('id', { ascending: true });
+            const { data, error } = await _supabase.from('estados_conductor').select('nombre, color').order('id', { ascending: true });
             if (data && data.length > 0) {
-                opcionesEstados = data.map(item => item.nombre);
+                opcionesEstados = data;
             }
             poblarSelectModal();
         }
@@ -274,8 +279,8 @@
             select.innerHTML = '';
             opcionesEstados.forEach(opt => {
                 const el = document.createElement('option');
-                el.value = opt;
-                el.textContent = opt;
+                el.value = opt.nombre;
+                el.textContent = opt.nombre;
                 select.appendChild(el);
             });
         }
@@ -292,6 +297,16 @@
             document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
         }
 
+        function obtenerColorEstado(nombreEstado) {
+            const est = opcionesEstados.find(o => o.nombre === nombreEstado);
+            if (est && est.color) return est.color;
+            if (nombreEstado === 'Activo') return '#22c55e';
+            if (nombreEstado === 'Falta injustificada') return '#ef4444';
+            if (nombreEstado === 'Descanso') return '#3b82f6';
+            if (nombreEstado === 'Incapacitado') return '#eab308';
+            return '#9ca3af';
+        }
+
         async function cargarConductores() {
             if (!_supabase) return;
             const { data, error } = await _supabase.from('conductores').select('*');
@@ -301,15 +316,13 @@
             if (data && data.length > 0) {
                 data.forEach(c => {
                     const est = c.estado || 'Activo';
+                    const colorActual = obtenerColorEstado(est);
 
                     const opcionesHTML = opcionesEstados.map(opt => `
-                        <option value="${opt}" ${opt === est ? 'selected' : ''}>${opt}</option>
+                        <option value="${opt.nombre}" ${opt.nombre === est ? 'selected' : ''} style="color: ${opt.color || '#fff'}; bg-color: #030712;">
+                            ${opt.nombre}
+                        </option>
                     `).join('');
-
-                    let colorTexto = 'text-green-400';
-                    if (est === 'Incapacitado') colorTexto = 'text-yellow-400';
-                    if (est === 'Falta injustificada') colorTexto = 'text-red-400';
-                    if (est === 'Descanso') colorTexto = 'text-blue-400';
 
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-950/50 transition">
@@ -317,8 +330,9 @@
                             <td class="p-4 font-bold text-white">${c.nombre_completo}</td>
                             <td class="p-4">${c.telefono || 'N/A'}</td>
                             <td class="p-4">
-                                <select onchange="cambiarEstadoConductorDirecto('${c.id}', this.value)" 
-                                        class="bg-gray-950 text-xs border border-gray-800 rounded px-2 py-1 font-semibold outline-none focus:border-blue-500 ${colorTexto}">
+                                <select onchange="cambiarEstadoConductorDirecto('${c.id}', this)" 
+                                        style="color: ${colorActual};"
+                                        class="bg-gray-950 text-xs border border-gray-800 rounded px-2 py-1 font-bold outline-none focus:border-blue-500">
                                     ${opcionesHTML}
                                 </select>
                             </td>
@@ -335,12 +349,14 @@
             }
         }
 
-        async function cambiarEstadoConductorDirecto(id, nuevoEstado) {
+        async function cambiarEstadoConductorDirecto(id, selectElem) {
+            const nuevoEstado = selectElem.value;
+            selectElem.style.color = obtenerColorEstado(nuevoEstado);
+
             const { error } = await _supabase.from('conductores').update({ estado: nuevoEstado }).eq('id', id);
-            if (!error) {
-                cargarConductores();
-            } else {
+            if (error) {
                 alert('Error al actualizar estado: ' + error.message);
+                cargarConductores();
             }
         }
 
