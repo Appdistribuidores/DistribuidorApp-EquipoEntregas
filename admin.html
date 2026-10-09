@@ -302,45 +302,54 @@
             document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
         }
 
-        async function cargarConductores() {
-            if (!_supabase) return;
-            const { data, error } = await _supabase.from('conductores').select('*');
-            const tbody = document.getElementById('tabla-conductores-body');
-            tbody.innerHTML = '';
+async function cargarConductores() {
+    if (!_supabase) return;
+    const { data, error } = await _supabase.from('conductores').select('*');
+    const tbody = document.getElementById('tabla-conductores-body');
+    tbody.innerHTML = '';
 
-            if (data && data.length > 0) {
-                data.forEach(c => {
-                    const est = c.estado || 'Activo';
-                    const esActivo = est === 'Activo';
-                    const badgeClass = esActivo 
-                        ? 'bg-green-500/10 text-green-400 border-green-500/20' 
-                        : 'bg-red-500/10 text-red-400 border-red-500/20';
+    if (data && data.length > 0) {
+        data.forEach(c => {
+            const est = c.estado || 'Activo';
 
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-950/50 transition">
-                            <td class="p-4 font-mono font-bold text-blue-400">${c.cedula || 'S/N'}</td>
-                            <td class="p-4 font-bold text-white">${c.nombre_completo}</td>
-                            <td class="p-4">${c.telefono || 'N/A'}</td>
-                            <td class="p-4">
-                                <span class="px-2 py-1 rounded-full text-xs border ${badgeClass}">
-                                    ${est}
-                                </span>
-                            </td>
-                            <td class="p-4 text-right space-x-3">
-                                <button onclick="cambiarEstadoConductor('${c.id}', '${est}')" class="text-gray-400 hover:text-white text-xs font-semibold">
-                                    ${esActivo ? 'Desactivar' : 'Activar'}
-                                </button>
-                                <button onclick="eliminarConductor('${c.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">
-                                    Eliminar
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">No hay conductores registrados.</td></tr>';
-            }
-        }
+            // Crear las opciones para el select dinámicamente
+            const opcionesHTML = opcionesEstados.map(opt => `
+                <option value="${opt}" ${opt === est ? 'selected' : ''}>${opt}</option>
+            `).join('');
+
+            tbody.innerHTML += `
+                <tr class="hover:bg-gray-950/50 transition">
+                    <td class="p-4 font-mono font-bold text-blue-400">${c.cedula || 'S/N'}</td>
+                    <td class="p-4 font-bold text-white">${c.nombre_completo}</td>
+                    <td class="p-4">${c.telefono || 'N/A'}</td>
+                    <td class="p-4">
+                        <select onchange="cambiarEstadoConductorDirecto('${c.id}', this.value)" 
+                                class="bg-gray-950 text-xs border border-gray-800 rounded px-2 py-1 font-semibold outline-none focus:border-blue-500 ${est === 'Activo' ? 'text-green-400' : 'text-red-400'}">
+                            ${opcionesHTML}
+                        </select>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="eliminarConductor('${c.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    } else {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-6 text-center text-gray-500">No hay conductores registrados.</td></tr>';
+    }
+}
+
+// Función para actualizar el estado inmediatamente al cambiar el select
+async function cambiarEstadoConductorDirecto(id, nuevoEstado) {
+    const { error } = await _supabase.from('conductores').update({ estado: nuevoEstado }).eq('id', id);
+    if (!error) {
+        cargarConductores();
+    } else {
+        alert('Error al actualizar estado: ' + error.message);
+    }
+}
 
         async function cargarVehiculos() {
             if (!_supabase) return;
