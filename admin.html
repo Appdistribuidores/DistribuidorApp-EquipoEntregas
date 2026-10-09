@@ -178,6 +178,13 @@
                         <label class="block text-xs font-medium text-gray-400 mb-1">Teléfono de Contacto</label>
                         <input type="text" id="cond-telefono" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none" placeholder="Ej: 3122345835">
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-400 mb-1">Estado</label>
+                        <select id="cond-estado" class="w-full bg-gray-950 border border-gray-800 text-white rounded-lg p-2.5 focus:border-blue-500 outline-none">
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="flex justify-end space-x-3 mt-6">
                     <button onclick="cerrarModales()" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-700">Cancelar</button>
@@ -213,12 +220,13 @@
 
     </div>
 
-    <!-- CÓDIGO Y LÓGICA -->
+    <!-- CÓDIGO Y LÓGICA DE SUPABASE -->
     <script>
         const SUPABASE_URL = 'https://vthocrcgkblewyanmxyq.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0MjUyNTAsImV4cCI6MjEwNzAwMTI1MH0.KKReebandReParmKHRxyDJya5i3iSQBaDXlfKhlK_jc'; 
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ0aG9jcmNna2JsZXd5YW5teHlxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDAzODU0NDAsImV4cCI6MjA1NTk2MTQ0MH0.x-0_C3sFfX4jGZp614m1r92P_4gH0zP3kR8Z_L4m0_0'; 
 
         let _supabase = null;
+        let opcionesEstados = ['Activo', 'Inactivo'];
 
         function validarLogin(e) {
             e.preventDefault();
@@ -244,10 +252,42 @@
             inicializarSupabase();
         }
 
-        function inicializarSupabase() {
+        async function inicializarSupabase() {
             _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            await cargarOpcionesEstados();
             cargarConductores();
             cargarVehiculos();
+        }
+
+        // Carga dinámicamente los estados disponibles desde Supabase si existe una tabla o ENUM
+        async function cargarOpcionesEstados() {
+            if (!_supabase) return;
+            try {
+                // Intenta consultar los valores distintos existentes o un enum
+                const { data, error } = await _supabase.from('conductores').select('estado');
+                if (data && data.length > 0) {
+                    const estadosUnicos = [...new Set(data.map(item => item.estado).filter(Boolean))];
+                    if (estadosUnicos.length > 0) {
+                        // Combina los valores encontrados con los estándar
+                        opcionesEstados = [...new Set([...opcionesEstados, ...estadosUnicos])];
+                    }
+                }
+            } catch (e) {
+                console.log('Usando opciones por defecto:', opcionesEstados);
+            }
+            poblarSelectEstado();
+        }
+
+        function poblarSelectEstado() {
+            const select = document.getElementById('cond-estado');
+            if (!select) return;
+            select.innerHTML = '';
+            opcionesEstados.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt;
+                el.textContent = opt;
+                select.appendChild(el);
+            });
         }
 
         function cambiarTab(tab) {
@@ -270,14 +310,29 @@
 
             if (data && data.length > 0) {
                 data.forEach(c => {
+                    const est = c.estado || 'Activo';
+                    const esActivo = est === 'Activo';
+                    const badgeClass = esActivo 
+                        ? 'bg-green-500/10 text-green-400 border-green-500/20' 
+                        : 'bg-red-500/10 text-red-400 border-red-500/20';
+
                     tbody.innerHTML += `
                         <tr class="hover:bg-gray-950/50 transition">
                             <td class="p-4 font-mono font-bold text-blue-400">${c.cedula || 'S/N'}</td>
                             <td class="p-4 font-bold text-white">${c.nombre_completo}</td>
                             <td class="p-4">${c.telefono || 'N/A'}</td>
-                            <td class="p-4"><span class="px-2 py-1 bg-green-500/10 text-green-400 rounded-full text-xs border border-green-500/20">Activo</span></td>
-                            <td class="p-4 text-right">
-                                <button onclick="eliminarConductor('${c.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">Eliminar</button>
+                            <td class="p-4">
+                                <span class="px-2 py-1 rounded-full text-xs border ${badgeClass}">
+                                    ${est}
+                                </span>
+                            </td>
+                            <td class="p-4 text-right space-x-3">
+                                <button onclick="cambiarEstadoConductor('${c.id}', '${est}')" class="text-gray-400 hover:text-white text-xs font-semibold">
+                                    ${esActivo ? 'Desactivar' : 'Activar'}
+                                </button>
+                                <button onclick="eliminarConductor('${c.id}')" class="text-red-400 hover:text-red-300 text-xs font-semibold">
+                                    Eliminar
+                                </button>
                             </td>
                         </tr>
                     `;
@@ -313,7 +368,10 @@
             }
         }
 
-        function abrirModalConductor() { document.getElementById('modal-conductor').classList.remove('hidden'); }
+        function abrirModalConductor() { 
+            poblarSelectEstado();
+            document.getElementById('modal-conductor').classList.remove('hidden'); 
+        }
         function abrirModalVehiculo() { document.getElementById('modal-vehiculo').classList.remove('hidden'); }
         function cerrarModales() {
             document.getElementById('modal-conductor').classList.add('hidden');
@@ -325,6 +383,7 @@
             const nombres = document.getElementById('cond-nombres').value.trim();
             const apellidos = document.getElementById('cond-apellidos').value.trim();
             const telefono = document.getElementById('cond-telefono').value.trim();
+            const estado = document.getElementById('cond-estado').value;
 
             if (!nombres || !apellidos) return alert('Debes ingresar nombres y apellidos.');
 
@@ -333,7 +392,8 @@
             const { error } = await _supabase.from('conductores').insert([{ 
                 cedula: cedula,
                 nombre_completo: nombreCompleto, 
-                telefono: telefono 
+                telefono: telefono,
+                estado: estado
             }]);
 
             if (!error) {
@@ -345,6 +405,16 @@
                 cargarConductores();
             } else { 
                 alert('Error al guardar conductor: ' + error.message); 
+            }
+        }
+
+        async function cambiarEstadoConductor(id, estadoActual) {
+            const nuevoEstado = estadoActual === 'Activo' ? 'Inactivo' : 'Activo';
+            const { error } = await _supabase.from('conductores').update({ estado: nuevoEstado }).eq('id', id);
+            if (!error) {
+                cargarConductores();
+            } else {
+                alert('Error al actualizar estado: ' + error.message);
             }
         }
 
